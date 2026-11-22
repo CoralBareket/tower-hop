@@ -17,5 +17,9 @@ services:
         value: production
       - key: NODE_VERSION
         value: '24'
+      # Neon pooled URL (host contains -pooler) — app queries
       - key: DATABASE_URL
+        sync: false
+      # Neon direct URL (no -pooler) — schema migrations on startup
+      - key: DATABASE_URL_UNPOOLED
         sync: false

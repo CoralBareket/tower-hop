@@ -15,18 +15,39 @@ export interface DbConnection {
 
 const MIGRATIONS = fileURLToPath(new URL('../../drizzle', import.meta.url));
 
-/** Production / Neon: a real Postgres server. Migrations run on startup. */
-export async function connectPostgres(url: string): Promise<DbConnection> {
+/**
+ * Neon URLs carry `channel_binding=require`, which postgres.js doesn't understand and would
+ * forward to the server as a bogus runtime parameter. TLS still comes from `sslmode=require`.
+ */
+function forPostgresJs(url: string): string {
+  const parsed = new URL(url);
+  parsed.searchParams.delete('channel_binding');
+  return parsed.toString();
+}
+
+/**
+ * Production / Neon: a real Postgres server.
+ *
+ * Neon gives two URLs for the same database:
+ *  - `url` (pooled, `-pooler` host → PgBouncer in transaction mode): normal app queries.
+ *  - `migrationUrl` (direct/unpooled): schema migrations, which need a real session.
+ * Migrations run once on startup over a short-lived direct connection, then it's closed.
+ */
+export async function connectPostgres(url: string, migrationUrl = url): Promise<DbConnection> {
   const { default: postgres } = await import('postgres');
   const { drizzle } = await import('drizzle-orm/postgres-js');
   const { migrate } = await import('drizzle-orm/postgres-js/migrator');
-  // Neon URLs carry `channel_binding=require`, which postgres.js doesn't understand and would
-  // forward to the server as a bogus runtime parameter. TLS still comes from `sslmode=require`.
-  const parsed = new URL(url);
-  parsed.searchParams.delete('channel_binding');
-  const client = postgres(parsed.toString(), { max: 5, onnotice: () => {} });
+
+  const direct = postgres(forPostgresJs(migrationUrl), { max: 1, onnotice: () => {} });
+  try {
+    await migrate(drizzle(direct, { schema }), { migrationsFolder: MIGRATIONS });
+  } finally {
+    await direct.end();
+  }
+
+  // prepare: false — named prepared statements don't survive PgBouncer transaction pooling.
+  const client = postgres(forPostgresJs(url), { max: 5, prepare: false, onnotice: () => {} });
   const db = drizzle(client, { schema });
-  await migrate(db, { migrationsFolder: MIGRATIONS });
   return { db: db as unknown as Db, close: () => client.end() };
 }
 

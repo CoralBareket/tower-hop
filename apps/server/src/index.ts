@@ -7,8 +7,9 @@ const databaseUrl = process.env.DATABASE_URL;
 if (production && !databaseUrl) throw new Error('DATABASE_URL is required in production');
 
 // No DATABASE_URL locally → zero-setup embedded Postgres persisted in apps/server/.data/
+// DATABASE_URL = pooled (app traffic); DATABASE_URL_UNPOOLED = direct (migrations). Both come from Neon.
 const { db, close } = databaseUrl
-  ? await connectPostgres(databaseUrl)
+  ? await connectPostgres(databaseUrl, process.env.DATABASE_URL_UNPOOLED ?? databaseUrl)
   : await connectPglite(fileURLToPath(new URL('../.data/pglite', import.meta.url)));
 
 const app = await buildApp({

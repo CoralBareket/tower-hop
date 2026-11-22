@@ -171,6 +171,32 @@ describe('hardening', () => {
     await prod.close();
   });
 
+  it('hides database internals when a query fails', async () => {
+    const broken = await connectPglite();
+    await broken.close(); // every query on this connection now fails
+    const brokenApp = await buildApp({ db: broken.db });
+    const res = await brokenApp.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { username: 'someone', password: PASSWORD },
+    });
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({ error: 'Something went wrong' });
+    expect(res.body).not.toMatch(/select|users|password_hash/i);
+    await brokenApp.close();
+  });
+
+  it('keeps useful messages for client errors like malformed JSON', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      headers: { 'content-type': 'application/json' },
+      payload: '{not json',
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBeTypeOf('string');
+  });
+
   it('health check responds', async () => {
     expect((await app.inject({ method: 'GET', url: '/api/health' })).json()).toEqual({
       status: 'ok',

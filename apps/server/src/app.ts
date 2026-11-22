@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
-import Fastify from 'fastify';
+import Fastify, { type FastifyError } from 'fastify';
+import type { ApiError } from '@summit-hop/shared';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
@@ -21,6 +22,17 @@ export interface AppOptions {
 export async function buildApp(o: AppOptions) {
   // trustProxy: Render terminates TLS in front of us; needed for real client IPs (rate limiting).
   const app = Fastify({ logger: o.logger ?? false, trustProxy: true, bodyLimit: 16 * 1024 });
+
+  // Never send internals (SQL text, stack traces) to the client on a server error — log them
+  // instead. 4xx errors (bad JSON, rate limit, …) keep their message since it's useful and safe.
+  app.setErrorHandler((err: FastifyError, req, reply) => {
+    const status = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500;
+    if (status >= 500) {
+      req.log.error({ err }, 'request failed');
+      return reply.code(500).send({ error: 'Something went wrong' } satisfies ApiError);
+    }
+    return reply.code(status).send({ error: err.message } satisfies ApiError);
+  });
 
   await app.register(cookie);
   await app.register(rateLimit, { global: false });

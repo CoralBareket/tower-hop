@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#16242f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Summit Hop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -113,6 +118,32 @@
     </style>
   </head>
   <body>
+    <div id="boot">
+      <div class="spinner"></div>
+      <span id="boot-title">Loading Summit Hop…</span>
+      <small id="boot-detail">First visit can take up to a minute while the server wakes up.</small>
+    </div>
+    <script>
+      // Classic (non-module) script: runs even on browsers too old to parse the game bundle,
+      // so a failure shows a message instead of a black screen.
+      window.__bootFail = function (msg) {
+        var b = document.getElementById('boot');
+        if (!b || b.hidden) return;
+        b.className = 'failed';
+        document.getElementById('boot-title').textContent = "The game couldn't start";
+        document.getElementById('boot-detail').textContent =
+          msg + ' — try updating your browser, or open the page in Chrome or Safari.';
+      };
+      window.addEventListener('error', function (e) {
+        window.__bootFail(e.message || 'Script error');
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        window.__bootFail(String((e.reason && e.reason.message) || e.reason));
+      });
+      setTimeout(function () {
+        window.__bootFail('Loading took too long (slow connection?)');
+      }, 90000);
+    </script>
     <div id="app"></div>
     <div id="auth-overlay" hidden>
       <form id="auth-form" class="auth-card" novalidate>
@@ -143,7 +174,7 @@
         <button id="auth-switch" class="auth-link" type="button">
           New here? Create an account
         </button>
-        <button id="auth-cancel" class="auth-link" type="button">Cancel (Esc)</button>
+        <button id="auth-cancel" class="auth-link" type="button">Play as guest</button>
       </form>
     </div>
     <script type="module" src="/src/main.ts"></script>

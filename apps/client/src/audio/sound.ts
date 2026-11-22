@@ -133,6 +133,10 @@ class Sound {
     }
   }
 
+  get isMuted(): boolean {
+    return this.muted;
+  }
+
   toggleMute(): boolean {
     this.muted = !this.muted;
     if (this.ctx)

@@ -14,6 +14,7 @@ import { clockFraction, createScroll, updateScroll, type ScrollState } from '../
 import { sound } from '../audio/sound';
 import { GraffitiLayer } from '../render/graffiti';
 import { Hud, comboTimeFraction } from '../render/hud';
+import { TouchControls } from '../ui/touchControls';
 import { TEX } from '../render/textures';
 import { themeFor } from '../render/themes';
 import { drawPlatform, drawWalls } from '../render/world';
@@ -44,6 +45,8 @@ export class GameScene extends Phaser.Scene {
   private sprite!: Phaser.GameObjects.Image;
   private hud!: Hud;
   private graffiti!: GraffitiLayer;
+  /** On-screen buttons; only created on touch devices. */
+  private touch: TouchControls | null = null;
   private keys!: Record<'left' | 'right' | 'up' | 'space' | 'a' | 'd' | 'w', Key>;
 
   constructor() {
@@ -70,6 +73,7 @@ export class GameScene extends Phaser.Scene {
     this.worldGfx = this.add.graphics();
     this.sprite = this.add.image(0, 0, TEX.hopper).setDepth(5);
     this.hud = new Hud(this);
+    this.touch = this.sys.game.device.input.touch ? new TouchControls(this) : null;
 
     const kb = this.input.keyboard!;
     const K = Phaser.Input.Keyboard.KeyCodes;
@@ -105,10 +109,11 @@ export class GameScene extends Phaser.Scene {
 
   private readInput(): PlayerInput {
     const k = this.keys;
+    const t = this.touch?.read();
     return {
-      left: k.left.isDown || k.a.isDown,
-      right: k.right.isDown || k.d.isDown,
-      jump: k.space.isDown || k.up.isDown || k.w.isDown,
+      left: k.left.isDown || k.a.isDown || !!t?.left,
+      right: k.right.isDown || k.d.isDown || !!t?.right,
+      jump: k.space.isDown || k.up.isDown || k.w.isDown || !!t?.jump,
     };
   }
 

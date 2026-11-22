@@ -1,5 +1,5 @@
 {
-  "name": "@summit-hop/server",
+  "name": "@towerhop/server",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -16,7 +16,7 @@
     "@fastify/rate-limit": "^11.3.0",
     "@fastify/static": "^10.1.12",
     "@node-rs/argon2": "^2.2.2",
-    "@summit-hop/shared": "*",
+    "@towerhop/shared": "*",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.8",
     "postgres": "^4.1.1"

@@ -5,7 +5,7 @@ import type {
   MeResponse,
   ScoreResponse,
   ScoreSubmit,
-} from '@summit-hop/shared';
+} from '@towerhop/shared';
 
 export class ApiRequestError extends Error {
   readonly status: number;

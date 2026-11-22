@@ -1,4 +1,4 @@
-# Summit Hop
+# TowerHop
 
 An endless vertical-climbing platformer: run, build momentum, launch off platforms, bounce off
 walls and chain multi-floor combos while the tower rises beneath you. Players can create an

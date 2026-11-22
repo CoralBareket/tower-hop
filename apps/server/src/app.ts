@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import Fastify, { type FastifyError } from 'fastify';
-import type { ApiError } from '@summit-hop/shared';
+import type { ApiError } from '@towerhop/shared';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';

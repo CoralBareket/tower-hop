@@ -6,7 +6,7 @@ import {
   type ApiError,
   type LeaderboardResponse,
   type ScoreResponse,
-} from '@summit-hop/shared';
+} from '@towerhop/shared';
 import { currentUser } from '../auth.ts';
 import type { Db } from '../db/index.ts';
 import { scores, users } from '../db/schema.ts';

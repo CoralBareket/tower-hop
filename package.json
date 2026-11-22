@@ -1,5 +1,5 @@
 {
-  "name": "summit-hop",
+  "name": "towerhop",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -10,12 +10,12 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "concurrently -k -n server,client -c cyan,magenta \"npm run dev -w @summit-hop/server\" \"npm run dev -w @summit-hop/client\"",
-    "build": "npm run build -w @summit-hop/client",
-    "start": "npm start -w @summit-hop/server",
+    "dev": "concurrently -k -n server,client -c cyan,magenta \"npm run dev -w @towerhop/server\" \"npm run dev -w @towerhop/client\"",
+    "build": "npm run build -w @towerhop/client",
+    "start": "npm start -w @towerhop/server",
     "test": "npm test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "db:generate": "npm run db:generate -w @summit-hop/server",
+    "db:generate": "npm run db:generate -w @towerhop/server",
     "format": "prettier --write ."
   },
   "devDependencies": {

@@ -5,7 +5,7 @@ import {
   type ApiError,
   type AuthResponse,
   type MeResponse,
-} from '@summit-hop/shared';
+} from '@towerhop/shared';
 import {
   currentUser,
   endSession,

@@ -2,11 +2,11 @@ import { createHash, randomBytes } from 'node:crypto';
 import { hash, verify } from '@node-rs/argon2';
 import { and, eq, gt, lt, sql } from 'drizzle-orm';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { PublicUser } from '@summit-hop/shared';
+import type { PublicUser } from '@towerhop/shared';
 import type { Db } from './db/index.ts';
 import { sessions, users } from './db/schema.ts';
 
-export const SESSION_COOKIE = 'sh_session';
+export const SESSION_COOKIE = 'towerhop_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -23,7 +23,7 @@ let dummyHash: Promise<string> | null = null;
  */
 export async function verifyPassword(passwordHash: string | null, password: string) {
   if (passwordHash === null) {
-    dummyHash ??= hash('summit-hop-dummy-password');
+    dummyHash ??= hash('towerhop-dummy-password');
     await verify(await dummyHash, password);
     return false;
   }

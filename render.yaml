@@ -2,7 +2,7 @@
 # Database: Neon Postgres; its connection string is entered as a secret (DATABASE_URL) in Render.
 services:
   - type: web
-    name: summit-hop
+    name: towerhop
     runtime: node
     plan: free
     region: oregon

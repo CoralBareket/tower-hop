@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { CredentialsSchema, type PublicUser } from '@summit-hop/shared';
+import { CredentialsSchema, type PublicUser } from '@towerhop/shared';
 import { api } from '../api/client';
 import { session } from '../api/session';
 

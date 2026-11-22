@@ -36,3 +36,14 @@ export function platformForFloor(floor: number, seed: number, t: Tuning = TUNING
 export function themeIndexForFloor(floor: number, t: Tuning = TUNING): number {
   return Math.floor(Math.max(0, floor) / t.themeEvery);
 }
+
+/**
+ * The empty band between floor `floor`'s platform and the one above it (world y, +down).
+ * Platform f covers [-f·S, -f·S + T]; platform f+1 covers [-(f+1)·S, -(f+1)·S + T].
+ * Anything drawn inside this band (e.g. graffiti) can never overlap a platform.
+ */
+export function gapAboveFloor(floor: number, t: Tuning = TUNING) {
+  const bottom = -floor * t.floorSpacing; // top surface of this floor's platform
+  const top = -(floor + 1) * t.floorSpacing + t.platformThickness; // underside of the next one
+  return { top, bottom, centerY: (top + bottom) / 2, height: bottom - top };
+}

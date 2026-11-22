@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TUNING } from '../src/config/tuning';
-import { platformForFloor } from '../src/core/tower';
+import { gapAboveFloor, platformForFloor } from '../src/core/tower';
 import { createScroll, updateScroll } from '../src/core/scroll';
 
 describe('tower', () => {
@@ -33,6 +33,20 @@ describe('tower', () => {
       return s / 39;
     };
     expect(avg(400)).toBeLessThan(avg(0));
+  });
+});
+
+describe('gapAboveFloor', () => {
+  it('is the free band between two platforms and never touches either', () => {
+    for (let f = 0; f < 300; f++) {
+      const gap = gapAboveFloor(f);
+      const below = platformForFloor(f, 3);
+      const above = platformForFloor(f + 1, 3);
+      expect(gap.height).toBe(TUNING.floorSpacing - TUNING.platformThickness);
+      expect(gap.bottom).toBeLessThanOrEqual(below.y); // above this floor's top surface
+      expect(gap.top).toBeGreaterThanOrEqual(above.y + TUNING.platformThickness); // below the next underside
+      expect(gap.centerY).toBe((gap.top + gap.bottom) / 2);
+    }
   });
 });
 

@@ -56,7 +56,7 @@ export const THEMES: Theme[] = [
     label: '#120f2e',
   },
   {
-    name: 'Summit',
+    name: 'Peak',
     bg: '#0a0d1a',
     wall: 0xbfc8d6,
     wallJoint: 0x939caf,

@@ -1,5 +1,5 @@
 {
-  "name": "@summit-hop/client",
+  "name": "@towerhop/client",
   "private": true,
   "version": "0.2.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@summit-hop/shared": "*",
+    "@towerhop/shared": "*",
     "phaser": "^3.90.0"
   }
 }

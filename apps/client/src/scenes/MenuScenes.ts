@@ -3,7 +3,7 @@ import { TUNING, VIEW } from '../config/tuning';
 import { api, ApiRequestError } from '../api/client';
 import { session } from '../api/session';
 import { sound } from '../audio/sound';
-import { makeTag } from '../render/graffiti';
+import { GAME_TAG, makeTag } from '../render/graffiti';
 import { FONT, textStyle } from '../render/hud';
 import { makeTextures, TEX } from '../render/textures';
 import { THEMES } from '../render/themes';
@@ -104,7 +104,7 @@ export class MenuScene extends Phaser.Scene {
     const touch = this.sys.game.device.input.touch;
     let seed = 7;
     const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    makeTag(this, cx - 20, 500, 'SUMMIT HOP', {
+    makeTag(this, cx - 20, 500, GAME_TAG, {
       size: 58,
       color: 0xff4d6d,
       angle: -7,
@@ -119,11 +119,12 @@ export class MenuScene extends Phaser.Scene {
       rng,
     });
 
-    this.add.text(cx, 64, 'SUMMIT HOP', textStyle(46, '#ffd166')).setOrigin(0.5);
+    this.add.text(cx, 56, 'TowerHop', textStyle(48, '#ffd166')).setOrigin(0.5);
+    this.add.text(cx, 92, 'ENDLESS TOWER-JUMPING', textStyle(13, '#4cc9f0')).setOrigin(0.5);
     this.add
       .text(
         cx,
-        112,
+        120,
         touch ? '◀ ▶ buttons run    ▲ jumps' : '← → run    SPACE / ↑ jump    M mute',
         textStyle(16),
       )

@@ -1,4 +1,4 @@
-import type { PublicUser } from '@summit-hop/shared';
+import type { PublicUser } from '@towerhop/shared';
 import { api } from './client';
 
 /**

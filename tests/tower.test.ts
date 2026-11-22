@@ -28,7 +28,8 @@ describe('tower', () => {
   it('platforms get narrower as you climb', () => {
     const avg = (from: number) => {
       let s = 0;
-      for (let f = from + 1; f < from + 40; f++) s += platformForFloor(f, 9).x2 - platformForFloor(f, 9).x1;
+      for (let f = from + 1; f < from + 40; f++)
+        s += platformForFloor(f, 9).x2 - platformForFloor(f, 9).x1;
       return s / 39;
     };
     expect(avg(400)).toBeLessThan(avg(0));

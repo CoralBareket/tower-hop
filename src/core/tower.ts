@@ -16,7 +16,7 @@ function mulberry32(a: number): () => number {
  * on demand, in any order, and always comes out identical for the same seed.
  * (That's also what makes "same seed = same tower" replays / daily challenges trivial later.)
  */
-function rngFor(seed: number, floor: number) {
+export function rngFor(seed: number, floor: number): () => number {
   return mulberry32((seed ^ Math.imul(floor + 1, 0x9e3779b1)) >>> 0);
 }
 

@@ -4,7 +4,10 @@ import type { ComboResult } from '../core/combo';
 
 export const FONT = '"Trebuchet MS", system-ui, sans-serif';
 
-export const textStyle = (size: number, color = '#ffffff'): Phaser.Types.GameObjects.Text.TextStyle => ({
+export const textStyle = (
+  size: number,
+  color = '#ffffff',
+): Phaser.Types.GameObjects.Text.TextStyle => ({
   fontFamily: FONT,
   fontSize: `${size}px`,
   fontStyle: 'bold',
@@ -33,12 +36,17 @@ export class Hud {
   private gfx: Phaser.GameObjects.Graphics;
 
   constructor(private scene: Phaser.Scene) {
-    const fix = <T extends Phaser.GameObjects.Components.ScrollFactor & Phaser.GameObjects.Components.Depth>(o: T) =>
-      o.setScrollFactor(0).setDepth(10);
+    const fix = <
+      T extends Phaser.GameObjects.Components.ScrollFactor & Phaser.GameObjects.Components.Depth,
+    >(
+      o: T,
+    ) => o.setScrollFactor(0).setDepth(10);
     this.gfx = fix(scene.add.graphics());
     this.score = fix(scene.add.text(44, 12, '', textStyle(20)));
     this.floor = fix(scene.add.text(VIEW.width - 44, 12, '', textStyle(20)).setOrigin(1, 0));
-    this.combo = fix(scene.add.text(VIEW.width / 2, 92, '', textStyle(22, '#ffd166')).setOrigin(0.5));
+    this.combo = fix(
+      scene.add.text(VIEW.width / 2, 92, '', textStyle(22, '#ffd166')).setOrigin(0.5),
+    );
   }
 
   update(s: HudState): void {
@@ -50,7 +58,9 @@ export class Hud {
     g.clear();
 
     // Speed-up clock
-    const cx = 64, cy = 66, r = 18;
+    const cx = 64,
+      cy = 66,
+      r = 18;
     g.fillStyle(0x0b1320, 0.8).fillCircle(cx, cy, r + 3);
     g.fillStyle(0xf1faee).fillCircle(cx, cy, r);
     if (s.clock > 0) {
@@ -58,7 +68,12 @@ export class Hud {
       g.slice(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + s.clock * Math.PI * 2).fillPath();
     }
     const a = -Math.PI / 2 + s.clock * Math.PI * 2;
-    g.lineStyle(3, 0x0b1320).lineBetween(cx, cy, cx + Math.cos(a) * (r - 3), cy + Math.sin(a) * (r - 3));
+    g.lineStyle(3, 0x0b1320).lineBetween(
+      cx,
+      cy,
+      cx + Math.cos(a) * (r - 3),
+      cy + Math.sin(a) * (r - 3),
+    );
     if (s.level > 0) {
       g.fillStyle(0xffd166);
       for (let i = 0; i < s.level; i++) g.fillCircle(cx + r + 10 + i * 9, cy, 3);
@@ -66,7 +81,9 @@ export class Hud {
 
     // Combo timer bar
     if (s.comboJumps > 0) {
-      const w = 180, x = VIEW.width / 2 - w / 2, y = 110;
+      const w = 180,
+        x = VIEW.width / 2 - w / 2,
+        y = 110;
       g.fillStyle(0x0b1320, 0.8).fillRect(x - 2, y - 2, w + 4, 10);
       g.fillStyle(0xffd166).fillRect(x, y, w * Math.max(0, s.comboTimeLeft), 6);
     }
@@ -77,7 +94,14 @@ export class Hud {
   }
 
   popCombo(r: ComboResult): void {
-    const label = r.floors >= 40 ? 'LEGENDARY!' : r.floors >= 20 ? 'AMAZING!' : r.floors >= 10 ? 'GREAT!' : 'NICE!';
+    const label =
+      r.floors >= 40
+        ? 'LEGENDARY!'
+        : r.floors >= 20
+          ? 'AMAZING!'
+          : r.floors >= 10
+            ? 'GREAT!'
+            : 'NICE!';
     this.popup(`${label}  +${r.bonus}`, '#ffd166', VIEW.height * 0.3, 28);
   }
 

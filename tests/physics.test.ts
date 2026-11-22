@@ -6,7 +6,13 @@ const dt = TUNING.step;
 const ground: Platform = { floor: 0, y: 0, x1: TUNING.wallLeft, x2: TUNING.wallRight };
 const NONE: PlayerInput = { left: false, right: false, jump: false };
 const player = (o: Partial<PlayerState> = {}): PlayerState => ({
-  x: 240, y: 0, vx: 0, vy: 0, onGround: true, floor: 0, ...o,
+  x: 240,
+  y: 0,
+  vx: 0,
+  vy: 0,
+  onGround: true,
+  floor: 0,
+  ...o,
 });
 const run = (p: PlayerState, input: PlayerInput, plats: Platform[], steps: number) => {
   for (let i = 0; i < steps; i++) stepPlayer(p, input, plats, dt);
@@ -40,7 +46,8 @@ describe('stepPlayer', () => {
     const p = player();
     stepPlayer(p, { ...NONE, jump: true }, [ground, ledge], dt);
     let landed: number | null = null;
-    for (let i = 0; i < 120 && landed === null; i++) landed = stepPlayer(p, NONE, [ground, ledge], dt).landedFloor;
+    for (let i = 0; i < 120 && landed === null; i++)
+      landed = stepPlayer(p, NONE, [ground, ledge], dt).landedFloor;
     expect(landed).toBe(1);
     expect(p.y).toBe(ledge.y);
     expect(p.onGround).toBe(true);

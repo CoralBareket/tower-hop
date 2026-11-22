@@ -11,6 +11,8 @@ import {
   type ComboState,
 } from '../core/combo';
 import { clockFraction, createScroll, updateScroll, type ScrollState } from '../core/scroll';
+import { sound } from '../audio/sound';
+import { GraffitiLayer } from '../render/graffiti';
 import { Hud, comboTimeFraction } from '../render/hud';
 import { TEX } from '../render/textures';
 import { themeFor } from '../render/themes';
@@ -39,6 +41,7 @@ export class GameScene extends Phaser.Scene {
   private worldGfx!: Phaser.GameObjects.Graphics;
   private sprite!: Phaser.GameObjects.Image;
   private hud!: Hud;
+  private graffiti!: GraffitiLayer;
   private keys!: Record<'left' | 'right' | 'up' | 'space' | 'a' | 'd' | 'w', Key>;
 
   constructor() {
@@ -60,6 +63,7 @@ export class GameScene extends Phaser.Scene {
     this.platforms.clear();
     this.labels.clear();
 
+    this.graffiti = new GraffitiLayer(this, this.seed);
     this.worldGfx = this.add.graphics();
     this.sprite = this.add.image(0, 0, TEX.hopper).setDepth(5);
     this.hud = new Hud(this);
@@ -75,6 +79,9 @@ export class GameScene extends Phaser.Scene {
       d: kb.addKey(K.D),
       w: kb.addKey(K.W),
     };
+    kb.on('keydown-M', () => sound.toggleMute());
+    sound.startMusic();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => sound.stopMusic());
     this.draw();
   }
 
@@ -120,13 +127,20 @@ export class GameScene extends Phaser.Scene {
 
   private simulate(dt: number): void {
     const ev = stepPlayer(this.player, this.readInput(), this.nearbyPlatforms(), dt);
+    if (ev.jumped) sound.jump(Math.abs(this.player.vx) / TUNING.maxRunSpeed);
+    if (ev.bouncedWall) sound.bounce();
     if (ev.landedFloor !== null) {
+      sound.land();
       this.highestFloor = Math.max(this.highestFloor, ev.landedFloor);
       this.applyCombo(onLand(this.combo, ev.landedFloor));
     }
     this.applyCombo(tickCombo(this.combo, dt));
 
-    if (updateScroll(this.scroll, dt, this.highestFloor).levelUp) this.hud.flashHurry();
+    if (updateScroll(this.scroll, dt, this.highestFloor).levelUp) {
+      this.hud.flashHurry();
+      sound.hurry();
+      sound.setIntensity(this.scroll.level);
+    }
     this.cameraTop -= this.scroll.speed * dt;
     const followTop = this.player.y - TUNING.playerHeight - VIEW.height * TUNING.followTopFraction;
     if (followTop < this.cameraTop) this.cameraTop = followTop;
@@ -141,11 +155,14 @@ export class GameScene extends Phaser.Scene {
     this.comboPoints += r.bonus;
     this.bestCombo = Math.max(this.bestCombo, r.floors);
     this.hud.popCombo(r);
+    sound.combo(r.floors);
   }
 
   private gameOver(): void {
     this.over = true;
     this.applyCombo(finishCombo(this.combo));
+    sound.stopMusic();
+    sound.gameOver();
     this.cameras.main.shake(250, 0.01);
     const data = { score: this.score, floor: this.highestFloor, bestCombo: this.bestCombo };
     this.time.delayedCall(700, () => this.scene.start('gameover', data));
@@ -161,7 +178,10 @@ export class GameScene extends Phaser.Scene {
     g.clear();
     drawWalls(g, this.cameraTop, theme);
 
-    const bottom = Math.max(0, Math.floor(-(this.cameraTop + VIEW.height) / TUNING.floorSpacing) - 1);
+    const bottom = Math.max(
+      0,
+      Math.floor(-(this.cameraTop + VIEW.height) / TUNING.floorSpacing) - 1,
+    );
     const top = Math.ceil(-this.cameraTop / TUNING.floorSpacing) + 1;
     for (let f = bottom; f <= top; f++) {
       const p = this.platformAt(f);
@@ -187,6 +207,7 @@ export class GameScene extends Phaser.Scene {
       }
     }
     for (const f of this.platforms.keys()) if (f < bottom - 10) this.platforms.delete(f);
+    this.graffiti.update(bottom, top);
 
     const p = this.player;
     this.sprite.setPosition(p.x, p.y - 20);

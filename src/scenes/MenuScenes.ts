@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { TUNING, VIEW } from '../config/tuning';
+import { sound } from '../audio/sound';
+import { makeTag } from '../render/graffiti';
 import { textStyle } from '../render/hud';
 import { makeTextures, TEX } from '../render/textures';
 import { THEMES } from '../render/themes';
@@ -23,9 +25,31 @@ function backdrop(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   drawWalls(g, 0, theme);
   const w = TUNING.wallRight - TUNING.wallLeft;
-  drawPlatform(g, { floor: 0, y: VIEW.height - 60, x1: TUNING.wallLeft, x2: TUNING.wallRight }, theme);
-  drawPlatform(g, { floor: 1, y: VIEW.height - 190, x1: TUNING.wallLeft + w * 0.55, x2: TUNING.wallLeft + w * 0.95 }, theme);
-  drawPlatform(g, { floor: 2, y: VIEW.height - 320, x1: TUNING.wallLeft + w * 0.08, x2: TUNING.wallLeft + w * 0.45 }, theme);
+  drawPlatform(
+    g,
+    { floor: 0, y: VIEW.height - 60, x1: TUNING.wallLeft, x2: TUNING.wallRight },
+    theme,
+  );
+  drawPlatform(
+    g,
+    {
+      floor: 1,
+      y: VIEW.height - 190,
+      x1: TUNING.wallLeft + w * 0.55,
+      x2: TUNING.wallLeft + w * 0.95,
+    },
+    theme,
+  );
+  drawPlatform(
+    g,
+    {
+      floor: 2,
+      y: VIEW.height - 320,
+      x1: TUNING.wallLeft + w * 0.08,
+      x2: TUNING.wallLeft + w * 0.45,
+    },
+    theme,
+  );
 }
 
 /** Wait a beat before accepting input, so a held key from the previous run doesn't skip the screen. */
@@ -40,25 +64,54 @@ export class MenuScene extends Phaser.Scene {
   create(): void {
     backdrop(this);
     const cx = VIEW.width / 2;
+    let seed = 7;
+    const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    makeTag(this, cx, 470, 'SUMMIT HOP', {
+      size: 58,
+      color: 0xff4d6d,
+      angle: -7,
+      alpha: 0.55,
+      rng,
+    });
+    makeTag(this, cx + 70, 545, 'no way but up', {
+      size: 24,
+      color: 0x4cc9f0,
+      angle: 4,
+      alpha: 0.5,
+      rng,
+    });
     this.add.text(cx, 120, 'SUMMIT HOP', textStyle(48, '#ffd166')).setOrigin(0.5);
+    this.add.text(cx, 190, '← → run    SPACE / ↑ jump    M mute', textStyle(18)).setOrigin(0.5);
     this.add
-      .text(cx, 190, '← → run    SPACE / ↑ jump', textStyle(18))
-      .setOrigin(0.5);
-    this.add
-      .text(cx, 250, 'Run fast before jumping to leap higher.\nBounce off walls to keep your speed.\nSkip 2+ floors per jump to chain combos.', {
-        ...textStyle(15, '#cfe3ff'),
-        align: 'center',
-        lineSpacing: 6,
-      })
+      .text(
+        cx,
+        250,
+        'Run fast before jumping to leap higher.\nBounce off walls to keep your speed.\nSkip 2+ floors per jump to chain combos.',
+        {
+          ...textStyle(15, '#cfe3ff'),
+          align: 'center',
+          lineSpacing: 6,
+        },
+      )
       .setOrigin(0.5);
     this.add.text(cx, 330, `BEST ${loadBest()}`, textStyle(20)).setOrigin(0.5);
 
     const hopper = this.add.image(cx, VIEW.height - 80, TEX.hopper);
-    this.tweens.add({ targets: hopper, y: hopper.y - 70, yoyo: true, repeat: -1, duration: 420, ease: 'Quad.easeOut' });
+    this.tweens.add({
+      targets: hopper,
+      y: hopper.y - 70,
+      yoyo: true,
+      repeat: -1,
+      duration: 420,
+      ease: 'Quad.easeOut',
+    });
 
     const prompt = this.add.text(cx, 400, 'PRESS SPACE', textStyle(24)).setOrigin(0.5);
     this.tweens.add({ targets: prompt, alpha: 0.2, yoyo: true, repeat: -1, duration: 600 });
-    onFreshPress(this, 'SPACE', () => this.scene.start('game'));
+    onFreshPress(this, 'SPACE', () => {
+      sound.unlock(); // key press = user gesture, which browsers require before playing audio
+      this.scene.start('game');
+    });
   }
 }
 
@@ -78,17 +131,25 @@ export class GameOverScene extends Phaser.Scene {
     const cx = VIEW.width / 2;
     this.add.text(cx, 130, 'YOU FELL!', textStyle(44, '#ff6b6b')).setOrigin(0.5);
     this.add
-      .text(cx, 230, `SCORE ${data.score}\nFLOOR ${data.floor}\nBEST COMBO ${data.bestCombo} floors`, {
-        ...textStyle(22),
-        align: 'center',
-        lineSpacing: 8,
-      })
+      .text(
+        cx,
+        230,
+        `SCORE ${data.score}\nFLOOR ${data.floor}\nBEST COMBO ${data.bestCombo} floors`,
+        {
+          ...textStyle(22),
+          align: 'center',
+          lineSpacing: 8,
+        },
+      )
       .setOrigin(0.5);
     this.add
       .text(cx, 320, isBest ? 'NEW BEST!' : `BEST ${loadBest()}`, textStyle(22, '#ffd166'))
       .setOrigin(0.5);
     this.add.text(cx, 400, 'SPACE retry    ESC menu', textStyle(18)).setOrigin(0.5);
-    onFreshPress(this, 'SPACE', () => this.scene.start('game'));
+    onFreshPress(this, 'SPACE', () => {
+      sound.unlock();
+      this.scene.start('game');
+    });
     onFreshPress(this, 'ESC', () => this.scene.start('menu'));
   }
 }

@@ -1,0 +1,28 @@
+{
+  "name": "@summit-hop/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/index.ts",
+    "start": "node src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/rate-limit": "^11.3.0",
+    "@fastify/static": "^10.1.12",
+    "@node-rs/argon2": "^2.2.2",
+    "@summit-hop/shared": "*",
+    "drizzle-orm": "^0.45.4",
+    "fastify": "^5.12.8",
+    "postgres": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.11"
+  }
+}

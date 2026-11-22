@@ -1,0 +1,17 @@
+{
+  "name": "@summit-hop/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "API contract (zod schemas + types) and score rules shared by client and server. Shipped as TypeScript source.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

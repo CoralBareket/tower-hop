@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Summit Hop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #070a12;
+      }
+      #app {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* ---- login / sign-up overlay ---- */
+      #auth-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: rgb(7 10 18 / 0.72);
+        backdrop-filter: blur(3px);
+        font-family: 'Trebuchet MS', system-ui, sans-serif;
+      }
+      #auth-overlay[hidden] {
+        display: none;
+      }
+      .auth-card {
+        width: min(340px, 100%);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 24px;
+        border-radius: 14px;
+        background: #16242f;
+        color: #f1faee;
+        border: 2px solid #ffd166;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+      }
+      .auth-card h2 {
+        margin: 0 0 4px;
+        color: #ffd166;
+        letter-spacing: 1px;
+      }
+      .auth-card label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 14px;
+        color: #cfe3ff;
+      }
+      .auth-card input {
+        font: inherit;
+        font-size: 16px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #3d5a4c;
+        background: #0b1320;
+        color: #f1faee;
+      }
+      .auth-card input:focus {
+        outline: 2px solid #4cc9f0;
+        outline-offset: 1px;
+      }
+      #auth-hint {
+        margin: -4px 0 0;
+        font-size: 12px;
+        color: #8fa3b8;
+      }
+      #auth-error {
+        margin: 0;
+        min-height: 1.2em;
+        font-size: 14px;
+        color: #ff6b6b;
+      }
+      #auth-submit {
+        font: inherit;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 11px;
+        border: 0;
+        border-radius: 8px;
+        background: #ffd166;
+        color: #0b1320;
+        cursor: pointer;
+      }
+      #auth-submit:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .auth-link {
+        font: inherit;
+        font-size: 14px;
+        background: none;
+        border: 0;
+        color: #4cc9f0;
+        cursor: pointer;
+        padding: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="auth-overlay" hidden>
+      <form id="auth-form" class="auth-card" novalidate>
+        <h2 id="auth-title">Log in</h2>
+        <label
+          >Username
+          <input
+            id="auth-username"
+            name="username"
+            autocomplete="username"
+            maxlength="20"
+            spellcheck="false"
+          />
+        </label>
+        <label
+          >Password
+          <input
+            id="auth-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            maxlength="128"
+          />
+        </label>
+        <p id="auth-hint" hidden>3–20 letters, digits or _ · password 8+ characters</p>
+        <p id="auth-error" role="alert"></p>
+        <button id="auth-submit" type="submit">Log in</button>
+        <button id="auth-switch" class="auth-link" type="button">
+          New here? Create an account
+        </button>
+        <button id="auth-cancel" class="auth-link" type="button">Cancel (Esc)</button>
+      </form>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

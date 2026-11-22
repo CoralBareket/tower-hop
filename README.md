@@ -1,42 +1,75 @@
 # Summit Hop
 
-An endless vertical-climbing platformer POC: run, build momentum, launch off platforms,
-bounce off walls and chain multi-floor combos while the tower rises beneath you.
-Original name, character and art — genre mechanics only.
+An endless vertical-climbing platformer: run, build momentum, launch off platforms, bounce off
+walls and chain multi-floor combos while the tower rises beneath you. Players can create an
+account, save scores, and compete on a global leaderboard. Original name, character, art and audio.
 
-## Run
+## Run locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm test         # unit tests for physics / combos / tower generation
-npm run build    # static build in dist/ (deployable to GitHub Pages, Netlify, Vercel…)
+npm run dev        # game → http://localhost:5173  (API on :3000, proxied under /api)
+npm test           # all workspaces: game rules, API contract, server (against in-process Postgres)
+npm run build      # builds the game into apps/client/dist
+npm start          # production mode: one server on :3000 serves game + API
 ```
 
-Controls: **← →** (or A/D) run · **Space / ↑** (or W) jump · Esc on game-over returns to menu.
+No database setup needed locally: without `DATABASE_URL`, the server uses **PGlite** (real Postgres
+compiled to WASM, running in-process), persisted in `apps/server/.data/`. To use a real Postgres,
+copy `apps/server/.env.example` to `apps/server/.env` and set `DATABASE_URL`.
+
+Controls: **← →** (or A/D) run · **Space / ↑** (or W) jump · **M** mute · **L** log in / out on the menu.
 
 ## Architecture
 
-Client-only monolith — no backend needed for single-player. If a global leaderboard is added
-later, convert to an npm-workspaces monorepo (`packages/game`, `packages/server`, `packages/shared`).
-
 ```
-src/
-  config/tuning.ts   every "feel" constant (speeds, gravity, jump, scroll, combo rules)
-  core/              pure TypeScript game rules — no Phaser imports, fully unit-tested
-    physics.ts       fixed-step player movement, wall bounce, one-way platform landing
-    jump.ts          run speed → jump velocity (the heart of the game feel)
-    combo.ts         multi-floor combo state machine + scoring
-    tower.ts         seeded, per-floor deterministic platform generation
-    scroll.ts        auto-rising camera that speeds up every 30 s
-  render/            Phaser drawing: procedural textures, walls/platforms, HUD, themes
-  scenes/            Boot → Menu → Game → GameOver
-tests/               Vitest specs for core/
+Browser (Phaser game + HTML login form)
+   │  fetch /api/*   (httpOnly session cookie, same origin)
+   ▼
+Fastify server ── also serves the built game as static files
+   │  Drizzle ORM
+   ▼
+Postgres (Neon in production, PGlite locally/tests)
 ```
 
-**Why custom physics instead of Phaser Arcade?** The game lives or dies on how jumps feel.
-A tiny hand-written integrator on a fixed 60 Hz timestep is deterministic (same at any FPS),
-trivially tunable from one file, and testable without a browser.
+npm-workspaces monorepo:
 
-**Score** = highest floor × 10 + Σ(combo floors²). A combo needs ≥ 2 jumps that each gain ≥ 2
-floors, and expires 3 s after the last qualifying landing.
+```
+apps/client/      Phaser game (TypeScript + Vite). Rules in src/core/ are pure + unit-tested
+apps/server/      Fastify API; src/db/schema.ts → drizzle/ migrations (run on startup)
+packages/shared/  zod schemas, API types and score-plausibility rules used by both sides
+render.yaml       Render deployment blueprint
+```
+
+The server and the shared package run as TypeScript directly on Node 24 (built-in type
+stripping) — no server build step.
+
+### API
+
+| Method | Path               |                                                                           |
+| ------ | ------------------ | ------------------------------------------------------------------------- |
+| POST   | `/api/auth/signup` | `{username, password}` → creates account, sets session cookie             |
+| POST   | `/api/auth/login`  | `{username, password}` → sets session cookie                              |
+| POST   | `/api/auth/logout` | ends the session                                                          |
+| GET    | `/api/me`          | current user + personal best (401 if guest)                               |
+| POST   | `/api/scores`      | `{score, floor, bestCombo, durationMs}` (login required) → `{best, rank}` |
+| GET    | `/api/leaderboard` | top 10, best score per player                                             |
+| GET    | `/api/health`      | health check                                                              |
+
+### Security notes
+
+- Passwords hashed with **argon2id**; login timing is the same whether or not the user exists.
+- Sessions are random 256-bit tokens in an `HttpOnly; SameSite=Lax` cookie (`Secure` in production);
+  only their SHA-256 is stored, so a DB leak exposes no live sessions. Logout deletes the session.
+- Signup/login rate-limited to 10/min per IP; scores to 30/min.
+- Scores are sanity-checked server-side: an honest run satisfies
+  `floor×10 ≤ score ≤ floor×10 + floor²` (combo floors can't exceed floors climbed) and a plausible
+  climb speed. Full replay validation is possible later because the game rules are deterministic.
+
+## Deploy (Render + Neon)
+
+1. **Neon** → create a project → copy the connection string.
+2. **Render** → New → Blueprint → select this repo → paste the Neon string as `DATABASE_URL`.
+3. Every push to `main` redeploys. Migrations run automatically on startup.
+
+The free Render plan sleeps after 15 minutes idle (first request then takes ~30 s).

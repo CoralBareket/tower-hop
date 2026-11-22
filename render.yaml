@@ -1,0 +1,21 @@
+# Render Blueprint — one web service serving the game + API.
+# Database: Neon Postgres; its connection string is entered as a secret (DATABASE_URL) in Render.
+services:
+  - type: web
+    name: summit-hop
+    runtime: node
+    plan: free
+    region: oregon
+    # --include=dev: NODE_ENV=production would otherwise skip Vite/TypeScript needed to build the client.
+    buildCommand: npm ci --include=dev && npm run build
+    # Runs DB migrations, then serves apps/client/dist + /api on $PORT.
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '24'
+      - key: DATABASE_URL
+        sync: false

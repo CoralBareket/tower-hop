@@ -34,6 +34,8 @@ export class GameScene extends Phaser.Scene {
   private comboPoints = 0;
   private bestCombo = 0;
   private accumulator = 0;
+  /** Simulated seconds played (sent with the score for server plausibility checks). */
+  private elapsed = 0;
   private spin = 0;
   private over = false;
   private platforms = new Map<number, Platform>();
@@ -58,6 +60,7 @@ export class GameScene extends Phaser.Scene {
     this.comboPoints = 0;
     this.bestCombo = 0;
     this.accumulator = 0;
+    this.elapsed = 0;
     this.spin = 0;
     this.over = false;
     this.platforms.clear();
@@ -126,6 +129,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private simulate(dt: number): void {
+    this.elapsed += dt;
     const ev = stepPlayer(this.player, this.readInput(), this.nearbyPlatforms(), dt);
     if (ev.jumped) sound.jump(Math.abs(this.player.vx) / TUNING.maxRunSpeed);
     if (ev.bouncedWall) sound.bounce();
@@ -164,7 +168,12 @@ export class GameScene extends Phaser.Scene {
     sound.stopMusic();
     sound.gameOver();
     this.cameras.main.shake(250, 0.01);
-    const data = { score: this.score, floor: this.highestFloor, bestCombo: this.bestCombo };
+    const data = {
+      score: this.score,
+      floor: this.highestFloor,
+      bestCombo: this.bestCombo,
+      durationMs: Math.round(this.elapsed * 1000),
+    };
     this.time.delayedCall(700, () => this.scene.start('gameover', data));
   }
 
